@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Go,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Golang 1.11 版本引入的 go mod，之前一直在使用go get方式管理包 本地开发环境情况说明123456789101112131415161718192021222324252627➜ /Users/jack/go/gomod/admin git:(master)&amp;gt;go envGOARCH=&amp;quot;amd64&amp;quot;GOBIN=&amp;quot;/Users/jack/go">
+<meta name="keywords" content="Go">
+<meta property="og:type" content="article">
+<meta property="og:title" content="go mod 使用">
+<meta property="og:url" content="http://blog.xiaogt.com/2019/08/10/go-mod-使用/index.html">
+<meta property="og:site_name" content="JackZhu&#39;s Blog">
+<meta property="og:description" content="Golang 1.11 版本引入的 go mod，之前一直在使用go get方式管理包 本地开发环境情况说明123456789101112131415161718192021222324252627➜ /Users/jack/go/gomod/admin git:(master)&amp;gt;go envGOARCH=&amp;quot;amd64&amp;quot;GOBIN=&amp;quot;/Users/jack/go">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-08-10T00:39:56.707Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="go mod 使用">
+<meta name="twitter:description" content="Golang 1.11 版本引入的 go mod，之前一直在使用go get方式管理包 本地开发环境情况说明123456789101112131415161718192021222324252627➜ /Users/jack/go/gomod/admin git:(master)&amp;gt;go envGOARCH=&amp;quot;amd64&amp;quot;GOBIN=&amp;quot;/Users/jack/go">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://blog.xiaogt.com/2019/08/10/go-mod-使用/">
+
+
+
+
+
+  <title>go mod 使用 | JackZhu's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">JackZhu's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">JackZhu's Blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.xiaogt.com/2019/08/10/go-mod-使用/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JackZhu">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JackZhu's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">go mod 使用</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T08:29:52+08:00">
+                2019-08-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2019/08/10/go-mod-使用/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/08/10/go-mod-使用/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Golang 1.11 版本引入的 go mod，之前一直在使用go get方式管理包</p>
+<h4 id="本地开发环境情况说明"><a href="#本地开发环境情况说明" class="headerlink" title="本地开发环境情况说明"></a>本地开发环境情况说明</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">➜ /Users/jack/go/gomod/admin git:(master)&gt;go env</span><br><span class="line">GOARCH=&quot;amd64&quot;</span><br><span class="line">GOBIN=&quot;/Users/jack/go/bin&quot;</span><br><span class="line">GOCACHE=&quot;/Users/jack/Library/Caches/go-build&quot;</span><br><span class="line">GOEXE=&quot;&quot;</span><br><span class="line">GOFLAGS=&quot;&quot;</span><br><span class="line">GOHOSTARCH=&quot;amd64&quot;</span><br><span class="line">GOHOSTOS=&quot;darwin&quot;</span><br><span class="line">GOOS=&quot;darwin&quot;</span><br><span class="line">GOPATH=&quot;/Users/jack/go&quot;</span><br><span class="line">GOPROXY=&quot;&quot;</span><br><span class="line">GORACE=&quot;&quot;</span><br><span class="line">GOROOT=&quot;/usr/local/go&quot;</span><br><span class="line">GOTMPDIR=&quot;&quot;</span><br><span class="line">GOTOOLDIR=&quot;/usr/local/go/pkg/tool/darwin_amd64&quot;</span><br><span class="line">GCCGO=&quot;gccgo&quot;</span><br><span class="line">CC=&quot;clang&quot;</span><br><span class="line">CXX=&quot;clang++&quot;</span><br><span class="line">CGO_ENABLED=&quot;1&quot;</span><br><span class="line">GOMOD=&quot;/Users/jack/go/gomod/admin/go.mod&quot;</span><br><span class="line">CGO_CFLAGS=&quot;-g -O2&quot;</span><br><span class="line">CGO_CPPFLAGS=&quot;&quot;</span><br><span class="line">CGO_CXXFLAGS=&quot;-g -O2&quot;</span><br><span class="line">CGO_FFLAGS=&quot;-g -O2&quot;</span><br><span class="line">CGO_LDFLAGS=&quot;-g -O2&quot;</span><br><span class="line">PKG_CONFIG=&quot;pkg-config&quot;</span><br><span class="line">GOGCCFLAGS=&quot;-fPIC -m64 -pthread -fno-caret-diagnostics -Qunused-arguments -fmessage-length=0 -fdebug-prefix-map=/var/folders/np/ks8717cn2_q91yhkw6gz08bm0000gn/T/go-build544492236=/tmp/go-build -gno-record-gcc-switches -fno-common&quot;</span><br></pre></td></tr></table></figure>
+
+<p>之前项目都在 ~/go/src/里面，所有的包也是src目录里面</p>
+<hr>
+<h4 id="现有项目迁移"><a href="#现有项目迁移" class="headerlink" title="现有项目迁移"></a>现有项目迁移</h4><ol>
+<li>把之前的工程 src/admin 目录拷贝到$GOPATH/src之外）</li>
+<li>在工程目录下执行 go mod init admin 该命令会创建一个go.mod文件</li>
+<li>然后在该目录下执行 go build ，就可以了。你将看到：</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">➜ /Users/jack/go/gomod/admin git:(dev)&gt;make run</span><br><span class="line">go build -o admin -v </span><br><span class="line">go: finding github.com/go-sql-driver/mysql v1.4.1</span><br><span class="line">go: finding github.com/astaxie/beego v1.12.0</span><br><span class="line">go: finding github.com/pkg/errors v0.8.1</span><br><span class="line">go: finding github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644</span><br><span class="line">go: finding github.com/cloudflare/golz4 v0.0.0-20150217214814-ef862a3cdc58</span><br><span class="line">go: finding github.com/Knetic/govaluate v3.0.0+incompatible</span><br><span class="line">go: finding github.com/bradfitz/gomemcache v0.0.0-20180710155616-bc664df96737</span><br><span class="line">go: finding github.com/OwnLocal/goes v1.0.0</span><br><span class="line">go: finding github.com/go-redis/redis v6.14.2+incompatible</span><br><span class="line">go: finding github.com/casbin/casbin v1.7.0</span><br><span class="line">go: finding github.com/couchbase/go-couchbase v0.0.0-20181122212707-3e9b6e1258bb</span><br><span class="line">go: finding github.com/beego/goyaml2 v0.0.0-20130207012346-5545475820dd</span><br><span class="line">go: finding github.com/mattn/go-sqlite3 v1.10.0</span><br><span class="line">go: finding github.com/beego/x2j v0.0.0-20131220205130-a0352aadc542</span><br><span class="line">go: finding github.com/siddontang/go v0.0.0-20180604090527-bdc77568d726</span><br><span class="line">go: finding github.com/wendal/errors v0.0.0-20130201093226-f66c77a7882b</span><br><span class="line">Fetching https://golang.org/x/net?go-get=1</span><br><span class="line">go: finding github.com/syndtr/goleveldb v0.0.0-20181127023241-353a9fca669c</span><br><span class="line">go: finding github.com/couchbase/goutils v0.0.0-20180530154633-e865a1461c8a</span><br><span class="line">go: finding github.com/elazarl/go-bindata-assetfs v1.0.0</span><br><span class="line">go: finding github.com/siddontang/ledisdb v0.0.0-20181029004158-becf5f38d373</span><br><span class="line">Parsing meta tags from https://golang.org/x/net?go-get=1 (status code 200)</span><br><span class="line">get &quot;golang.org/x/net&quot;: found meta tag get.metaImport&#123;Prefix:&quot;golang.org/x/net&quot;, VCS:&quot;git&quot;, RepoRoot:&quot;https://go.googlesource.com/net&quot;&#125; at https://golang.org/x/net?go-get=1</span><br><span class="line">go: finding golang.org/x/net v0.0.0-20181114220301-adae6a3d119a</span><br><span class="line">go: finding github.com/gogo/protobuf v1.1.1</span><br><span class="line">go: finding github.com/lib/pq v1.0.0</span><br><span class="line">go: finding github.com/gomodule/redigo v2.0.0+incompatible</span><br><span class="line">go: finding github.com/pelletier/go-toml v1.2.0</span><br><span class="line">go: finding github.com/ssdb/gossdb v0.0.0-20180723034631-88f6b59b84ec</span><br><span class="line">go: finding github.com/couchbase/gomemcached v0.0.0-20181122193126-5125a94a666c</span><br><span class="line">go: finding github.com/edsrzf/mmap-go v0.0.0-20170320065105-0bce6a688712</span><br><span class="line">go: finding github.com/cupcake/rdb v0.0.0-20161107195141-43ba34106c76</span><br><span class="line">Fetching https://golang.org/x/crypto?go-get=1</span><br><span class="line">Parsing meta tags from https://golang.org/x/crypto?go-get=1 (status code 200)</span><br><span class="line">get &quot;golang.org/x/crypto&quot;: found meta tag get.metaImport&#123;Prefix:&quot;golang.org/x/crypto&quot;, VCS:&quot;git&quot;, RepoRoot:&quot;https://go.googlesource.com/crypto&quot;&#125; at https://golang.org/x/crypto?go-get=1</span><br><span class="line">go: finding golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85</span><br><span class="line">go: finding github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db</span><br><span class="line">go: finding github.com/pkg/errors v0.8.0</span><br><span class="line">Fetching https://gopkg.in/yaml.v2?go-get=1</span><br><span class="line">go: finding github.com/siddontang/rdb v0.0.0-20150307021120-fc89ed2e418d</span><br><span class="line">Parsing meta tags from https://gopkg.in/yaml.v2?go-get=1 (status code 200)</span><br><span class="line">get &quot;gopkg.in/yaml.v2&quot;: found meta tag get.metaImport&#123;Prefix:&quot;gopkg.in/yaml.v2&quot;, VCS:&quot;git&quot;, RepoRoot:&quot;https://gopkg.in/yaml.v2&quot;&#125; at https://gopkg.in/yaml.v2?go-get=1</span><br><span class="line">go: finding gopkg.in/yaml.v2 v2.2.1</span><br><span class="line">Fetching https://gopkg.in/check.v1?go-get=1</span><br><span class="line">Parsing meta tags from https://gopkg.in/check.v1?go-get=1 (status code 200)</span><br><span class="line">get &quot;gopkg.in/check.v1&quot;: found meta tag get.metaImport&#123;Prefix:&quot;gopkg.in/check.v1&quot;, VCS:&quot;git&quot;, RepoRoot:&quot;https://gopkg.in/check.v1&quot;&#125; at https://gopkg.in/check.v1?go-get=1</span><br><span class="line">go: finding gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405</span><br><span class="line">go: downloading github.com/astaxie/beego v1.12.0</span><br><span class="line">go: downloading github.com/pkg/errors v0.8.1</span><br><span class="line">go: downloading github.com/go-sql-driver/mysql v1.4.1</span><br><span class="line">go: downloading github.com/gomodule/redigo v2.0.0+incompatible</span><br><span class="line">go: downloading github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644</span><br><span class="line">go: downloading golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85</span><br><span class="line">go: downloading gopkg.in/yaml.v2 v2.2.1</span><br><span class="line">./admin</span><br><span class="line">2019/08/06 11:41:20.004 [I] [router.go:270]  /Users/jack/go/src/admin/controllers no changed</span><br><span class="line">2019/08/06 11:41:20.005 [I] [router.go:270]  /Users/jack/go/src/admin/controllers no changed</span><br><span class="line">2019/08/06 11:41:22.070 [I] [asm_amd64.s:1333]  http server Running on http://:80</span><br><span class="line">2019/08/06 11:41:22.070 [I] [asm_amd64.s:1333]  Admin server Running on :8088</span><br></pre></td></tr></table></figure>
+
+
+<pre><code>可以看到会自动去下载相对应的包
+
+这个时候看项目目录里面自动创建两个文件 go.mod go.sum</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">➜ /Users/jack/go/gomod/admin git:(dev) ✗&gt;cat go.mod go.sum </span><br><span class="line">module admin</span><br><span class="line"></span><br><span class="line">require (</span><br><span class="line">	github.com/astaxie/beego v1.12.0</span><br><span class="line">	github.com/go-sql-driver/mysql v1.4.1</span><br><span class="line">	github.com/pkg/errors v0.8.1</span><br><span class="line">	github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644 // indirect</span><br><span class="line">)</span><br><span class="line">github.com/Knetic/govaluate v3.0.0+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=</span><br><span class="line">github.com/OwnLocal/goes v1.0.0/go.mod h1:8rIFjBGTue3lCU0wplczcUgt9Gxgrkkrw7etMIcn8TM=</span><br><span class="line">github.com/astaxie/beego v1.12.0 h1:MRhVoeeye5N+Flul5PoVfD9CslfdoH+xqC/xvSQ5u2Y=</span><br><span class="line">github.com/astaxie/beego v1.12.0/go.mod h1:fysx+LZNZKnvh4GED/xND7jWtjCR6HzydR2Hh2Im57o=</span><br><span class="line">github.com/beego/goyaml2 v0.0.0-20130207012346-5545475820dd/go.mod h1:1b+Y/CofkYwXMUU0OhQqGvsY2Bvgr4j6jfT699wyZKQ=</span><br><span class="line">github.com/beego/x2j v0.0.0-20131220205130-a0352aadc542/go.mod h1:kSeGC/p1AbBiEp5kat81+DSQrZenVBZXklMLaELspWU=</span><br><span class="line">github.com/bradfitz/gomemcache v0.0.0-20180710155616-bc664df96737/go.mod h1:PmM6Mmwb0LSuEubjR8N7PtNe1KxZLtOUHtbeikc5h60=</span><br><span class="line">github.com/casbin/casbin v1.7.0/go.mod h1:c67qKN6Oum3UF5Q1+BByfFxkwKvhwW57ITjqwtzR1KE=</span><br><span class="line">github.com/cloudflare/golz4 v0.0.0-20150217214814-ef862a3cdc58/go.mod h1:EOBUe0h4xcZ5GoxqC5SDxFQ8gwyZPKQoEzownBlhI80=</span><br><span class="line">github.com/couchbase/go-couchbase v0.0.0-20181122212707-3e9b6e1258bb/go.mod h1:TWI8EKQMs5u5jLKW/tsb9VwauIrMIxQG1r5fMsswK5U=</span><br><span class="line">github.com/couchbase/gomemcached v0.0.0-20181122193126-5125a94a666c/go.mod h1:srVSlQLB8iXBVXHgnqemxUXqN6FCvClgCMPCsjBDR7c=</span><br><span class="line">github.com/couchbase/goutils v0.0.0-20180530154633-e865a1461c8a/go.mod h1:BQwMFlJzDjFDG3DJUdU0KORxn88UlsOULuxLExMh3Hs=</span><br><span class="line">github.com/cupcake/rdb v0.0.0-20161107195141-43ba34106c76/go.mod h1:vYwsqCOLxGiisLwp9rITslkFNpZD5rz43tf41QFkTWY=</span><br><span class="line">github.com/edsrzf/mmap-go v0.0.0-20170320065105-0bce6a688712/go.mod h1:YO35OhQPt3KJa3ryjFM5Bs14WD66h8eGKpfaBNrHW5M=</span><br><span class="line">github.com/elazarl/go-bindata-assetfs v1.0.0/go.mod h1:v+YaWX3bdea5J/mo8dSETolEo7R71Vk1u8bnjau5yw4=</span><br><span class="line">github.com/go-redis/redis v6.14.2+incompatible/go.mod h1:NAIEuMOZ/fxfXJIrKDQDz8wamY7mA7PouImQ2Jvg6kA=</span><br><span class="line">github.com/go-sql-driver/mysql v1.4.1 h1:g24URVg0OFbNUTx9qqY1IRZ9D9z3iPyi5zKhQZpNwpA=</span><br><span class="line">github.com/go-sql-driver/mysql v1.4.1/go.mod h1:zAC/RDZ24gD3HViQzih4MyKcchzm+sOG5ZlKdlhCg5w=</span><br><span class="line">github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=</span><br><span class="line">github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=</span><br><span class="line">github.com/gomodule/redigo v2.0.0+incompatible h1:K/R+8tc58AaqLkqG2Ol3Qk+DR/TlNuhuh457pBFPtt0=</span><br><span class="line">github.com/gomodule/redigo v2.0.0+incompatible/go.mod h1:B4C85qUVwatsJoIUNIfCRsp7qO0iAmpGFZ4EELWSbC4=</span><br><span class="line">github.com/lib/pq v1.0.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=</span><br><span class="line">github.com/mattn/go-sqlite3 v1.10.0/go.mod h1:FPy6KqzDD04eiIsT53CuJW3U88zkxoIYsOqkbpncsNc=</span><br><span class="line">github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=</span><br><span class="line">github.com/pkg/errors v0.8.0/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=</span><br><span class="line">github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=</span><br><span class="line">github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=</span><br><span class="line">github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644 h1:X+yvsM2yrEktyI+b2qND5gpH8YhURn0k8OCaeRnkINo=</span><br><span class="line">github.com/shiena/ansicolor v0.0.0-20151119151921-a422bbe96644/go.mod h1:nkxAfR/5quYxwPZhyDxgasBMnRtBZd0FCEpawpjMUFg=</span><br><span class="line">github.com/siddontang/go v0.0.0-20180604090527-bdc77568d726/go.mod h1:3yhqj7WBBfRhbBlzyOC3gUxftwsU0u8gqevxwIHQpMw=</span><br><span class="line">github.com/siddontang/ledisdb v0.0.0-20181029004158-becf5f38d373/go.mod h1:mF1DpOSOUiJRMR+FDqaqu3EBqrybQtrDDszLUZ6oxPg=</span><br><span class="line">github.com/siddontang/rdb v0.0.0-20150307021120-fc89ed2e418d/go.mod h1:AMEsy7v5z92TR1JKMkLLoaOQk++LVnOKL3ScbJ8GNGA=</span><br><span class="line">github.com/ssdb/gossdb v0.0.0-20180723034631-88f6b59b84ec/go.mod h1:QBvMkMya+gXctz3kmljlUCu/yB3GZ6oee+dUozsezQE=</span><br><span class="line">github.com/syndtr/goleveldb v0.0.0-20181127023241-353a9fca669c/go.mod h1:Z4AUp2Km+PwemOoO/VB5AOx9XSsIItzFjoJlOSiYmn0=</span><br><span class="line">github.com/wendal/errors v0.0.0-20130201093226-f66c77a7882b/go.mod h1:Q12BUT7DqIlHRmgv3RskH+UCM/4eqVMgI0EMmlSpAXc=</span><br><span class="line">golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85 h1:et7+NAX3lLIk5qUCTA9QelBjGE/NkhzYw/mhnr0s7nI=</span><br><span class="line">golang.org/x/crypto v0.0.0-20181127143415-eb0de9b17e85/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=</span><br><span class="line">golang.org/x/net v0.0.0-20181114220301-adae6a3d119a/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=</span><br><span class="line">gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=</span><br><span class="line">gopkg.in/yaml.v2 v2.2.1 h1:mUhvW9EsL+naU5Q3cakzfE91YhliOondGd6ZrsDBHQE=</span><br><span class="line">gopkg.in/yaml.v2 v2.2.1/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=</span><br></pre></td></tr></table></figure>
+
+<pre><code>下载下来的包放在 $GOPATH/pkg/mod 目录里面</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">➜ /Users/jack/go/pkg/mod &gt;tree -L 2 $GOPATH/pkg/mod</span><br><span class="line">/Users/jack/go/pkg/mod</span><br><span class="line">├── cache</span><br><span class="line">│   ├── download</span><br><span class="line">│   └── vcs</span><br><span class="line">├── github.com</span><br><span class="line">│   ├── astaxie</span><br><span class="line">│   ├── go-sql-driver</span><br><span class="line">│   ├── gomodule</span><br><span class="line">│   ├── pkg</span><br><span class="line">│   └── shiena</span><br><span class="line">├── golang.org</span><br><span class="line">│   └── x</span><br><span class="line">└── gopkg.in</span><br><span class="line">    └── yaml.v2@v2.2.1</span><br><span class="line"></span><br><span class="line">13 directories, 0 files</span><br></pre></td></tr></table></figure>
+
+
+<p>学习参考</p>
+<p><a href="https://blog.golang.org/using-go-modules" target="_blank" rel="noopener">using-go-modules</a></p>
+<p><a href="https://ieevee.com/tech/2018/08/28/go-modules.html" target="_blank" rel="noopener">Golang官方包依赖管理工具 go mod 简明教程</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Go/" rel="tag"># Go</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/08/10/go-build-不同平台执行文件/" rel="next" title="go build 不同平台执行文件">
+                <i class="fa fa-chevron-left"></i> go build 不同平台执行文件
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/08/10/Golang生产环境中time包的zonefile-zip问题/" rel="prev" title="Golang生产环境中time包的zonefile.zip问题">
+                Golang生产环境中time包的zonefile.zip问题 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">JackZhu</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/xiaoJack" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:xiaogt.xiaogt@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#本地开发环境情况说明"><span class="nav-number">1.</span> <span class="nav-text">本地开发环境情况说明</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#现有项目迁移"><span class="nav-number">2.</span> <span class="nav-text">现有项目迁移</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JackZhu</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://blog-xiaogt-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'http://blog.xiaogt.com/2019/08/10/go-mod-使用/';
+          this.page.identifier = '2019/08/10/go-mod-使用/';
+          this.page.title = 'go mod 使用';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://blog-xiaogt-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
