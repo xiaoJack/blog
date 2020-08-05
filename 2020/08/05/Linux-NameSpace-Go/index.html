@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="概念Namespace是Linux内核对系统资源进行隔离和虚拟化的特性，这些系统资源包括进程ID、主机名、用户ID、网络访问、进程间通讯和文件系统等 当前Linux一共实现六种不同类型的namespace。   Namespace类型 系统调用参数 内核版本    UTS namespaces CLONE_NEWUTS 2.6.19   IPC namespaces CLONE_NEWIPC 2.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux NameSpace Go">
+<meta property="og:url" content="http://blog.xiaogt.com/2020/08/05/Linux-NameSpace-Go/index.html">
+<meta property="og:site_name" content="JackZhu&#39;s Blog">
+<meta property="og:description" content="概念Namespace是Linux内核对系统资源进行隔离和虚拟化的特性，这些系统资源包括进程ID、主机名、用户ID、网络访问、进程间通讯和文件系统等 当前Linux一共实现六种不同类型的namespace。   Namespace类型 系统调用参数 内核版本    UTS namespaces CLONE_NEWUTS 2.6.19   IPC namespaces CLONE_NEWIPC 2.">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://uploads.toptal.io/blog/image/674/toptal-blog-image-1416487554032.png">
+<meta property="og:updated_time" content="2020-08-05T02:22:12.455Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux NameSpace Go">
+<meta name="twitter:description" content="概念Namespace是Linux内核对系统资源进行隔离和虚拟化的特性，这些系统资源包括进程ID、主机名、用户ID、网络访问、进程间通讯和文件系统等 当前Linux一共实现六种不同类型的namespace。   Namespace类型 系统调用参数 内核版本    UTS namespaces CLONE_NEWUTS 2.6.19   IPC namespaces CLONE_NEWIPC 2.">
+<meta name="twitter:image" content="https://uploads.toptal.io/blog/image/674/toptal-blog-image-1416487554032.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://blog.xiaogt.com/2020/08/05/Linux-NameSpace-Go/">
+
+
+
+
+
+  <title>Linux NameSpace Go | JackZhu's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">JackZhu's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">JackZhu's Blog</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.xiaogt.com/2020/08/05/Linux-NameSpace-Go/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JackZhu">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JackZhu's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Linux NameSpace Go</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-08-05T10:19:23+08:00">
+                2020-08-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/08/05/Linux-NameSpace-Go/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/08/05/Linux-NameSpace-Go/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><p>Namespace是Linux内核对系统资源进行隔离和虚拟化的特性，这些系统资源包括进程ID、主机名、用户ID、网络访问、进程间通讯和文件系统等</p>
+<h3 id="当前Linux一共实现六种不同类型的namespace。"><a href="#当前Linux一共实现六种不同类型的namespace。" class="headerlink" title="当前Linux一共实现六种不同类型的namespace。"></a>当前Linux一共实现六种不同类型的namespace。</h3><table>
+<thead>
+<tr>
+<th>Namespace类型</th>
+<th>系统调用参数</th>
+<th>内核版本</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>UTS namespaces</td>
+<td>CLONE_NEWUTS</td>
+<td>2.6.19</td>
+</tr>
+<tr>
+<td>IPC namespaces</td>
+<td>CLONE_NEWIPC</td>
+<td>2.6.19</td>
+</tr>
+<tr>
+<td>PID namespaces</td>
+<td>CLONE_NEWPID</td>
+<td>2.6.24</td>
+</tr>
+<tr>
+<td>Network namespaces</td>
+<td>CLONE_NEWNET</td>
+<td>2.6.29</td>
+</tr>
+<tr>
+<td>User namespaces</td>
+<td>CLONE_NEWUSER</td>
+<td>3.8</td>
+</tr>
+<tr>
+<td>Mount namespaces</td>
+<td>CLONE_NEWNS</td>
+<td>2.4.19</td>
+</tr>
+</tbody></table>
+<h3 id="UTS-Namespace"><a href="#UTS-Namespace" class="headerlink" title="UTS Namespace"></a>UTS Namespace</h3><p>UTS namespace 功能最简单，它只隔离了 hostname 和 NIS domain name 两个资源。同一个 namespace 里面的进程看到的 hostname 和 domain name 是相同的，这两个值可以通过 sethostname(2) 和 setdomainname(2) 来进行设置，也可以通过 uname(2)、gethostname(2) 和 getdomainname(2) 来读取。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">    &quot;log&quot;</span><br><span class="line">    &quot;os&quot;</span><br><span class="line">    &quot;os/exec&quot;</span><br><span class="line">    &quot;syscall&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">    cmd := exec.Command(&quot;sh&quot;)</span><br><span class="line">    cmd.SysProcAttr = &amp;syscall.SysProcAttr&#123;</span><br><span class="line">        Cloneflags: syscall.CLONE_NEWUTS, </span><br><span class="line">    &#125;</span><br><span class="line">    cmd.Stdin = os.Stdin</span><br><span class="line">    cmd.Stdout = os.Stdout</span><br><span class="line">    cmd.Stderr = os.Stderr</span><br><span class="line"></span><br><span class="line">    if err := cmd.Run(); err != nil &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="User-Namesapce"><a href="#User-Namesapce" class="headerlink" title="User Namesapce"></a>User Namesapce</h3><p>User namespace 隔离的是用户和组信息，在不同的 namespace 中用户可以有相同的 UID 和 GID，它们之间互相不影响。另外，还有父子 namespace 之间用户和组映射的功能。父 namespace 中非 root 用户也能成为子 namespace 中的 root，这样就能增加安全性（如果所有 namespace 的 root 用户都是一样的，会带来子 namespace 操作父 namespace 内容的危险）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">    &quot;log&quot;</span><br><span class="line">    &quot;os&quot;</span><br><span class="line">    &quot;os/exec&quot;</span><br><span class="line">    &quot;syscall&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">    cmd := exec.Command(&quot;sh&quot;)</span><br><span class="line"></span><br><span class="line">    cmd.SysProcAttr = &amp;syscall.SysProcAttr&#123;</span><br><span class="line">        Cloneflags: syscall.CLONE_NEWNS |</span><br><span class="line">            syscall.CLONE_NEWUTS |</span><br><span class="line">            syscall.CLONE_NEWUSER,</span><br><span class="line">        UidMappings: []syscall.SysProcIDMap&#123;</span><br><span class="line">            &#123;</span><br><span class="line">                ContainerID: 0,</span><br><span class="line">                HostID:      os.Getuid(),</span><br><span class="line">                Size:        1,</span><br><span class="line">            &#125;,</span><br><span class="line">        &#125;,</span><br><span class="line">        GidMappings: []syscall.SysProcIDMap&#123;</span><br><span class="line">            &#123;</span><br><span class="line">                ContainerID: 0,</span><br><span class="line">                HostID:      os.Getgid(),</span><br><span class="line">                Size:        1,</span><br><span class="line">            &#125;,</span><br><span class="line">        &#125;,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    cmd.Stdin = os.Stdin</span><br><span class="line">    cmd.Stdout = os.Stdout</span><br><span class="line">    cmd.Stderr = os.Stderr</span><br><span class="line"></span><br><span class="line">    if err := cmd.Run(); err != nil &#123;</span><br><span class="line">        log.Fatal(err)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Mount-Namespace"><a href="#Mount-Namespace" class="headerlink" title="Mount Namespace"></a>Mount Namespace</h3><p>mount namespace 是用来隔离各个进程看到的挂载点视图。在不同namespace中的进程看到的文件系统层次是不一样的。在mount namespace 中调用mount()和umount()仅仅只会影响当前namespace内的文件系统，而对全局的文件系统是没有影响的。</p>
+<h3 id="PID-namespace"><a href="#PID-namespace" class="headerlink" title="PID namespace"></a>PID namespace</h3><p>PID namespace 隔离的是进程的 pid 属性，也就是说不同的 namespace 中的进程可以有相同的 pid。PID namespace 和我们常见的系统规则一样，都是从 pid 1 开始，每次 fork、vfork、clone 调用都会分配新的 pid。</p>
+<p>PID namespace 第一个运行的进程的 pid 编号为 1，也被成为 init 进程。所有的孤儿进程（父进程被杀死）都会被 reparent 到 init 进程，如果 init 进程挂掉了，系统会发送 SIGKILL 信号给该 namespace 中的所有进程来杀死它们。由此可见，init 进程对于 PID namespace 至关重要，因此在容器中你可能听说过关于哪个程序最适合做 init 进程的争论。</p>
+<p>PID namespace 另外一个特殊的特性是，通过 unshare 和 setns 系统调用都不会都不会把当前进程加入到新的 namespace，而是把该进程的子进程进入到里面。之所以这样设计，是因为 pid 是进程非常重要的信息，很多应用程序都会假定这个值不会变化，如果 unshare 或者 setns 把当前进程加入到新的 namespace 中，那么进程的 PID 将会发生变化，原来的 PID 也会被其他进程使用，会导致很多程序出现问题。</p>
+<p><img src="https://uploads.toptal.io/blog/image/674/toptal-blog-image-1416487554032.png" alt="avatar"></p>
+<h3 id="IPC-namespaces"><a href="#IPC-namespaces" class="headerlink" title="IPC namespaces"></a>IPC namespaces</h3><p>IPC 是进程间通信的意思，作用是每个 namespace 都有自己的 IPC，防止不同 namespace 进程能互相通信（这样存在安全隐患）。</p>
+<p>IPC namespace 隔离的是 IPC（Inter-Process Communication） 资源，也就是进程间通信的方式，包括 System V IPC 和 POSIX message queues。每个 IPC namespace 都有自己的 System V IPC 和 POSIX message queues，并且对其他 namespace 不可见，这样的话，只有同一个 namespace 下的进程之间才能够通信。</p>
+<p>下面这些 /proc 中内容对于每个 namespace 都是不同的：</p>
+<p>/proc/sys/fs/mqueue 下的 POSIX message queues<br>/proc/sys/kernel 下的 System V IPC，包括 msgmax, msgmnb, msgmni, sem, shmall, shmmax, shmmni, and shm_rmid_forced<br>/proc/sysvipc/：保存了该 namespace 下的 system V ipc 信息<br>在 linux 下和 ipc 打交道，需要用到以下两个命令：</p>
+<p>ipcs：查看IPC(共享内存、消息队列和信号量)的信息<br>ipcmk：创建IPC(共享内存、消息队列和信号量)的信息</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">    &quot;fmt&quot;</span><br><span class="line">    &quot;os&quot;</span><br><span class="line">    &quot;path/filepath&quot;</span><br><span class="line">    &quot;syscall&quot;</span><br><span class="line">    &quot;flag&quot;</span><br><span class="line">    &quot;github.com/docker/docker/pkg/reexec&quot;</span><br><span class="line">    &quot;os/exec&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">func init() &#123;</span><br><span class="line"></span><br><span class="line">    fmt.Printf(&quot;arg0=%s,\n&quot;,os.Args[0])</span><br><span class="line"></span><br><span class="line">    reexec.Register(&quot;initFuncName&quot;, func() &#123;</span><br><span class="line">        fmt.Printf(&quot;\n&gt;&gt; namespace setup code goes here &lt;&lt;\n\n&quot;)</span><br><span class="line"></span><br><span class="line">        newRoot := os.Args[1]</span><br><span class="line"></span><br><span class="line">        if err := mountProc(newRoot); err != nil &#123;</span><br><span class="line">            fmt.Printf(&quot;Error mounting /proc - %s\n&quot;, err)</span><br><span class="line">            os.Exit(1)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        fmt.Printf(&quot;newRoot:%s \n&quot;,newRoot)</span><br><span class="line">        if err := pivotRoot(newRoot); err != nil &#123;</span><br><span class="line">            fmt.Printf(&quot;Error running pivot_root - %s\n&quot;, err)</span><br><span class="line">            os.Exit(1)</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        nsRun() //calling clone() to create new process goes here</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">    if reexec.Init() &#123;</span><br><span class="line">        os.Exit(0)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">func checkRootfs(rootfsPath string) &#123;</span><br><span class="line">    if _, err := os.Stat(rootfsPath); os.IsNotExist(err) &#123;</span><br><span class="line">        fmt.Printf(&quot;rootfsPath %s is not found you may need to download it&quot;,rootfsPath)</span><br><span class="line">        os.Exit(1)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//implement pivot_root by syscall</span><br><span class="line">func pivotRoot(newroot string) error &#123;</span><br><span class="line"></span><br><span class="line">    preRoot := &quot;/.pivot_root&quot;</span><br><span class="line">    putold := filepath.Join(newroot,preRoot) //putold:/tmp/ns-proc/rootfs/.pivot_root</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    // pivot_root requirement that newroot and putold must not be on the same filesystem as the current root</span><br><span class="line">    //current root is / and new root is /tmp/ns-proc/rootfs and putold is /tmp/ns-proc/rootfs/.pivot_root</span><br><span class="line">    //thus we bind mount newroot to itself to make it different</span><br><span class="line">    //try to comment here you can see the error</span><br><span class="line">    if err := syscall.Mount(newroot, newroot, &quot;&quot;, syscall.MS_BIND|syscall.MS_REC, &quot;&quot;); err != nil &#123;</span><br><span class="line">        fmt.Printf(&quot;mount newroot:%s to itself error \n&quot;,newroot)</span><br><span class="line">        return err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // create putold directory, equal to mkdir -p xxx</span><br><span class="line">    if err := os.MkdirAll(putold, 0700); err != nil &#123;</span><br><span class="line">        fmt.Printf(&quot;create putold directory %s erro \n&quot;,putold)</span><br><span class="line">        return err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // call pivot_root</span><br><span class="line">    if err := syscall.PivotRoot(newroot, putold); err != nil &#123;</span><br><span class="line">        fmt.Printf(&quot;call PivotRoot error, newroot:%s,putold:%s \n&quot;,newroot,putold)</span><br><span class="line">        return err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // ensure current working directory is set to new root</span><br><span class="line">    if err := os.Chdir(&quot;/&quot;); err != nil &#123;</span><br><span class="line">        return err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // umount putold, which now lives at /.pivot_root</span><br><span class="line">    putold = preRoot</span><br><span class="line">    if err := syscall.Unmount(putold, syscall.MNT_DETACH); err != nil &#123;</span><br><span class="line">        fmt.Printf(&quot;umount putold:%s error \n&quot;,putold)</span><br><span class="line">        return err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // remove putold</span><br><span class="line">    if err := os.RemoveAll(putold); err != nil &#123;</span><br><span class="line">        fmt.Printf(&quot;remove putold:%s error \n&quot;,putold)</span><br><span class="line">        return err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return nil</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">func mountProc(newroot string) error &#123;</span><br><span class="line">    source := &quot;proc&quot;</span><br><span class="line">    target := filepath.Join(newroot, &quot;/proc&quot;)</span><br><span class="line">    fstype := &quot;proc&quot;</span><br><span class="line">    flags := 0</span><br><span class="line">    data := &quot;&quot;</span><br><span class="line"></span><br><span class="line">    os.MkdirAll(target, 0755)</span><br><span class="line">    if err := syscall.Mount(</span><br><span class="line">        source,</span><br><span class="line">        target,</span><br><span class="line">        fstype,</span><br><span class="line">        uintptr(flags),</span><br><span class="line">        data,</span><br><span class="line">    ); err != nil &#123;</span><br><span class="line">        return err</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return nil</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">func nsRun() &#123;</span><br><span class="line">    cmd := exec.Command(&quot;/bin/sh&quot;)</span><br><span class="line"></span><br><span class="line">    cmd.Env = []string&#123;&quot;PATH=/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin&quot;&#125;</span><br><span class="line"></span><br><span class="line">    //set identify for this demo</span><br><span class="line">    cmd.Stdin = os.Stdin</span><br><span class="line">    cmd.Stdout = os.Stdout</span><br><span class="line">    cmd.Stderr = os.Stderr</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    if err := cmd.Run(); err != nil &#123;</span><br><span class="line">        fmt.Printf(&quot;Error running the /bin/sh command - %s\n&quot;, err)</span><br><span class="line">        os.Exit(1)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line"></span><br><span class="line">    var rootfsPath string</span><br><span class="line">    flag.StringVar(&amp;rootfsPath, &quot;rootfs&quot;, &quot;/tmp/ns-proc/rootfs&quot;, &quot;Path to the root filesystem to use&quot;)</span><br><span class="line">    flag.Parse()</span><br><span class="line"></span><br><span class="line">    checkRootfs(rootfsPath)</span><br><span class="line"></span><br><span class="line">    cmd := reexec.Command(&quot;initFuncName&quot;,rootfsPath)</span><br><span class="line"></span><br><span class="line">    cmd.Stdin = os.Stdin</span><br><span class="line">    cmd.Stdout = os.Stdout</span><br><span class="line">    cmd.Stderr = os.Stderr</span><br><span class="line"></span><br><span class="line">    cmd.SysProcAttr = &amp;syscall.SysProcAttr&#123;</span><br><span class="line">        Cloneflags: syscall.CLONE_NEWNS |</span><br><span class="line">            syscall.CLONE_NEWUTS |</span><br><span class="line">            syscall.CLONE_NEWIPC |</span><br><span class="line">            syscall.CLONE_NEWPID |</span><br><span class="line">            syscall.CLONE_NEWNET |</span><br><span class="line">            syscall.CLONE_NEWUSER,</span><br><span class="line">        UidMappings: []syscall.SysProcIDMap&#123;</span><br><span class="line">            &#123;</span><br><span class="line">                ContainerID: 0,</span><br><span class="line">                HostID:      os.Getuid(),</span><br><span class="line">                Size:        1,</span><br><span class="line">            &#125;,</span><br><span class="line">        &#125;,</span><br><span class="line">        GidMappings: []syscall.SysProcIDMap&#123;</span><br><span class="line">            &#123;</span><br><span class="line">                ContainerID: 0,</span><br><span class="line">                HostID:      os.Getgid(),</span><br><span class="line">                Size:        1,</span><br><span class="line">            &#125;,</span><br><span class="line">        &#125;,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    if err := cmd.Run(); err != nil &#123;</span><br><span class="line">        fmt.Printf(&quot;Error running the reexec.Command - %s\n&quot;, err)</span><br><span class="line">        os.Exit(1)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Network-Namespace"><a href="#Network-Namespace" class="headerlink" title="Network Namespace"></a>Network Namespace</h3><p>Net namespace 隔离的是和网络相关的资源，包括网络设备、路由表、防火墙(iptables)、socket（ss、netstat）、 /proc/net 目录、/sys/class/net 目录、网络端口(network interfaces)等等。</p>
+<p>一个物理网络设备只能出现在最多一个网络 namespace 中，不同网络 namespace 之间可以通过创建 veth pair 提供类似管道的通信。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br></pre></td><td class="code"><pre><span class="line">// +build linux</span><br><span class="line"></span><br><span class="line">package main</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">	&quot;bytes&quot;</span><br><span class="line">	&quot;flag&quot;</span><br><span class="line">	&quot;fmt&quot;</span><br><span class="line">	&quot;github.com/docker/docker/pkg/reexec&quot;</span><br><span class="line">	&quot;os&quot;</span><br><span class="line">	&quot;os/exec&quot;</span><br><span class="line">	&quot;syscall&quot;</span><br><span class="line"></span><br><span class="line">	&quot;path/filepath&quot;</span><br><span class="line">	&quot;net&quot;</span><br><span class="line">	&quot;time&quot;</span><br><span class="line"></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">func init() &#123;</span><br><span class="line"></span><br><span class="line">	fmt.Printf(&quot;arg0=%s,\n&quot;,os.Args[0])</span><br><span class="line"></span><br><span class="line">	reexec.Register(&quot;initFuncName&quot;, func() &#123;</span><br><span class="line">		fmt.Printf(&quot;\n&gt;&gt; namespace setup code goes here &lt;&lt;\n\n&quot;)</span><br><span class="line"></span><br><span class="line">		newRoot := os.Args[1]</span><br><span class="line"></span><br><span class="line">		if err := mountProc(newRoot); err != nil &#123;</span><br><span class="line">			fmt.Printf(&quot;Error mounting /proc - %s\n&quot;, err)</span><br><span class="line">			os.Exit(1)</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		fmt.Printf(&quot;newRoot:%s \n&quot;,newRoot)</span><br><span class="line">		if err := pivotRoot(newRoot); err != nil &#123;</span><br><span class="line">			fmt.Printf(&quot;Error running pivot_root - %s\n&quot;, err)</span><br><span class="line">			os.Exit(1)</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">		if err := waitNetwork(); err != nil &#123;</span><br><span class="line">			fmt.Printf(&quot;Error waiting for network - %s\n&quot;, err)</span><br><span class="line">			os.Exit(1)</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">		nsRun() //calling clone() to create new process goes here</span><br><span class="line">	&#125;)</span><br><span class="line"></span><br><span class="line">	if reexec.Init() &#123;</span><br><span class="line">		os.Exit(0)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">func nsRun() &#123;</span><br><span class="line">	cmd := exec.Command(&quot;sh&quot;)</span><br><span class="line"></span><br><span class="line">    cmd.Env = []string&#123;&quot;PATH=/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin&quot;&#125;</span><br><span class="line">	//set identify for this demo</span><br><span class="line">	cmd.Stdin = os.Stdin</span><br><span class="line">	cmd.Stdout = os.Stdout</span><br><span class="line">	cmd.Stderr = os.Stderr</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	if err := cmd.Run(); err != nil &#123;</span><br><span class="line">		fmt.Printf(&quot;Error running the /bin/sh command - %s\n&quot;, err)</span><br><span class="line">		os.Exit(1)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line"></span><br><span class="line">	var rootfsPath,netsetPath string</span><br><span class="line"></span><br><span class="line">	flag.StringVar(&amp;netsetPath, &quot;netsetPath&quot;, &quot;./netsetter.sh&quot;, &quot;Path to the netset shell&quot;)</span><br><span class="line">	flag.StringVar(&amp;rootfsPath, &quot;rootfs&quot;, &quot;/tmp/ns-proc/rootfs&quot;, &quot;Path to the root filesystem to use&quot;)</span><br><span class="line">	flag.Parse()</span><br><span class="line"></span><br><span class="line">	checkRootfs(rootfsPath)</span><br><span class="line">	checkNetsetter(netsetPath)</span><br><span class="line"></span><br><span class="line">	cmd := reexec.Command(&quot;initFuncName&quot;,rootfsPath)</span><br><span class="line"></span><br><span class="line">    cmd.Env = []string&#123;&quot;PATH=/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/bin&quot;&#125;</span><br><span class="line">	cmd.Stdin = os.Stdin</span><br><span class="line">	cmd.Stdout = os.Stdout</span><br><span class="line">	cmd.Stderr = os.Stderr</span><br><span class="line"></span><br><span class="line">	cmd.SysProcAttr = &amp;syscall.SysProcAttr&#123;</span><br><span class="line">		Cloneflags: syscall.CLONE_NEWNS |</span><br><span class="line">			syscall.CLONE_NEWUTS |</span><br><span class="line">			syscall.CLONE_NEWIPC |</span><br><span class="line">			syscall.CLONE_NEWPID |</span><br><span class="line">			syscall.CLONE_NEWNET |</span><br><span class="line">			syscall.CLONE_NEWUSER,</span><br><span class="line">		UidMappings: []syscall.SysProcIDMap&#123;</span><br><span class="line">			&#123;</span><br><span class="line">				ContainerID: 0,</span><br><span class="line">				HostID:      os.Getuid(),</span><br><span class="line">				Size:        1,</span><br><span class="line">			&#125;,</span><br><span class="line">		&#125;,</span><br><span class="line">		GidMappings: []syscall.SysProcIDMap&#123;</span><br><span class="line">			&#123;</span><br><span class="line">				ContainerID: 0,</span><br><span class="line">				HostID:      os.Getgid(),</span><br><span class="line">				Size:        1,</span><br><span class="line">			&#125;,</span><br><span class="line">		&#125;,</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	if err := cmd.Start(); err != nil &#123;</span><br><span class="line">		fmt.Printf(&quot;Error starting the reexec.Command - %s\n&quot;, err)</span><br><span class="line">		os.Exit(1)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	// run netsetgo using default args</span><br><span class="line"></span><br><span class="line">	pid := fmt.Sprintf(&quot;%d&quot;, cmd.Process.Pid)</span><br><span class="line"></span><br><span class="line">	//netsetCmd := exec.Command(&quot;whoami&quot; ) //see current user , my result is ubuntu not root</span><br><span class="line">	netsetCmd := exec.Command(&quot;sudo&quot;,netsetPath, pid) //</span><br><span class="line">	var out bytes.Buffer</span><br><span class="line">	var stderr bytes.Buffer</span><br><span class="line">	netsetCmd.Stdout = &amp;out</span><br><span class="line">	netsetCmd.Stderr = &amp;stderr</span><br><span class="line"></span><br><span class="line">	if err := netsetCmd.Start(); err != nil &#123;</span><br><span class="line">		fmt.Printf(&quot;Error running netsetg:%s, stderr:%s, stdout:%s&quot;,fmt.Sprint(err),stderr.String(),out.String())</span><br><span class="line">		os.Exit(1)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Printf(&quot;run netsetter: stdout:%s \n&quot;,out.String())</span><br><span class="line"></span><br><span class="line">	if err := cmd.Wait(); err != nil &#123;</span><br><span class="line">		fmt.Printf(&quot;Error waiting for the reexec.Command - %s\n&quot;, err)</span><br><span class="line">		os.Exit(1)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">func checkNetsetter(netsetPath string) &#123;</span><br><span class="line">	if _, err := os.Stat(netsetPath); os.IsNotExist(err) &#123;</span><br><span class="line">		errMsg := fmt.Sprintf(`file %s not found! you must have a netsetter binary or shell and run with root privilege，</span><br><span class="line">or run with argument -netsetPath path_to_your_netsetter</span><br><span class="line">`, netsetPath)</span><br><span class="line">		fmt.Println(errMsg)</span><br><span class="line">		os.Exit(1)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">func waitNetwork() error &#123;</span><br><span class="line">	maxWait := time.Second * 60</span><br><span class="line">	checkInterval := time.Second</span><br><span class="line">	timeStarted := time.Now()</span><br><span class="line"></span><br><span class="line">	for &#123;</span><br><span class="line">		fmt.Printf(&quot;status: waiting network ...\n&quot;)</span><br><span class="line">		interfaces, err := net.Interfaces()</span><br><span class="line">		if err != nil &#123;</span><br><span class="line">			return err</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		if len(interfaces) &gt; 1 &#123;</span><br><span class="line">			return nil</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		if time.Since(timeStarted) &gt; maxWait &#123;</span><br><span class="line">			return fmt.Errorf(&quot;Timeout after %s waiting for network&quot;, maxWait)</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		time.Sleep(checkInterval)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">func checkRootfs(rootfsPath string) &#123;</span><br><span class="line">	if _, err := os.Stat(rootfsPath); os.IsNotExist(err) &#123;</span><br><span class="line">		fmt.Printf(&quot;rootfsPath %s is not found you may need to download it&quot;,rootfsPath)</span><br><span class="line">		os.Exit(1)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">//implement pivot_root by syscall</span><br><span class="line">func pivotRoot(newroot string) error &#123;</span><br><span class="line"></span><br><span class="line">	preRoot := &quot;/.pivot_root&quot;</span><br><span class="line">	putold := filepath.Join(newroot,preRoot) //putold:/tmp/ns-proc/rootfs/.pivot_root</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	// pivot_root requirement that newroot and putold must not be on the same filesystem as the current root</span><br><span class="line">	//current root is / and new root is /tmp/ns-proc/rootfs and putold is /tmp/ns-proc/rootfs/.pivot_root</span><br><span class="line">	//thus we bind mount newroot to itself to make it different</span><br><span class="line">	//try to comment here you can see the error</span><br><span class="line">	if err := syscall.Mount(newroot, newroot, &quot;&quot;, syscall.MS_BIND|syscall.MS_REC, &quot;&quot;); err != nil &#123;</span><br><span class="line">		fmt.Printf(&quot;mount newroot:%s to itself error \n&quot;,newroot)</span><br><span class="line">		return err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	// create putold directory, equal to mkdir -p xxx</span><br><span class="line">	if err := os.MkdirAll(putold, 0700); err != nil &#123;</span><br><span class="line">		fmt.Printf(&quot;create putold directory %s erro \n&quot;,putold)</span><br><span class="line">		return err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	// call pivot_root</span><br><span class="line">	if err := syscall.PivotRoot(newroot, putold); err != nil &#123;</span><br><span class="line">		fmt.Printf(&quot;call PivotRoot error, newroot:%s,putold:%s \n&quot;,newroot,putold)</span><br><span class="line">		return err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	// ensure current working directory is set to new root</span><br><span class="line">	if err := os.Chdir(&quot;/&quot;); err != nil &#123;</span><br><span class="line">		return err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	// umount putold, which now lives at /.pivot_root</span><br><span class="line">	putold = preRoot</span><br><span class="line">	if err := syscall.Unmount(putold, syscall.MNT_DETACH); err != nil &#123;</span><br><span class="line">		fmt.Printf(&quot;umount putold:%s error \n&quot;,putold)</span><br><span class="line">		return err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	// remove putold</span><br><span class="line">	if err := os.RemoveAll(putold); err != nil &#123;</span><br><span class="line">		fmt.Printf(&quot;remove putold:%s error \n&quot;,putold)</span><br><span class="line">		return err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	return nil</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">func mountProc(newroot string) error &#123;</span><br><span class="line">	source := &quot;proc&quot;</span><br><span class="line">	target := filepath.Join(newroot, &quot;/proc&quot;)</span><br><span class="line">	fstype := &quot;proc&quot;</span><br><span class="line">	flags := 0</span><br><span class="line">	data := &quot;&quot;</span><br><span class="line"></span><br><span class="line">	os.MkdirAll(target, 0755)</span><br><span class="line">	if err := syscall.Mount(</span><br><span class="line">		source,</span><br><span class="line">		target,</span><br><span class="line">		fstype,</span><br><span class="line">		uintptr(flags),</span><br><span class="line">		data,</span><br><span class="line">	); err != nil &#123;</span><br><span class="line">		return err</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	return nil</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Centos7 系统默认没有开启NameSpases,以下方式开启</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo 640 &gt; /proc/sys/user/max_user_namespaces</span><br></pre></td></tr></table></figure>
+
+<p>参考代码</p>
+<ul>
+<li><a href="https://github.com/xiaoJack/linux-namespace-go" target="_blank" rel="noopener">https://github.com/xiaoJack/linux-namespace-go</a></li>
+</ul>
+<p>参考文献</p>
+<ul>
+<li><a href="https://developer.aliyun.com/article/64928" target="_blank" rel="noopener">https://developer.aliyun.com/article/64928</a></li>
+<li><a href="https://here2say.com/41/" target="_blank" rel="noopener">https://here2say.com/41/</a></li>
+<li><a href="https://images.contentstack.io/v3/assets/blt300387d93dabf50e/bltb6200bc085503718/5e1f209a63d1b6503160c6d5/containers-vs-virtual-machines.jpg" target="_blank" rel="noopener">https://images.contentstack.io/v3/assets/blt300387d93dabf50e/bltb6200bc085503718/5e1f209a63d1b6503160c6d5/containers-vs-virtual-machines.jpg</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/08/10/Go项目使用Makefile文件编译/" rel="next" title="Go项目使用Make工具编译">
+                <i class="fa fa-chevron-left"></i> Go项目使用Make工具编译
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">JackZhu</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives">
+              
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/xiaoJack" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:xiaogt.xiaogt@gmail.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概念"><span class="nav-number">1.</span> <span class="nav-text">概念</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#当前Linux一共实现六种不同类型的namespace。"><span class="nav-number">1.1.</span> <span class="nav-text">当前Linux一共实现六种不同类型的namespace。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#UTS-Namespace"><span class="nav-number">1.2.</span> <span class="nav-text">UTS Namespace</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#User-Namesapce"><span class="nav-number">1.3.</span> <span class="nav-text">User Namesapce</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Mount-Namespace"><span class="nav-number">1.4.</span> <span class="nav-text">Mount Namespace</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PID-namespace"><span class="nav-number">1.5.</span> <span class="nav-text">PID namespace</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IPC-namespaces"><span class="nav-number">1.6.</span> <span class="nav-text">IPC namespaces</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Network-Namespace"><span class="nav-number">1.7.</span> <span class="nav-text">Network Namespace</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JackZhu</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://blog-xiaogt-com.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'http://blog.xiaogt.com/2020/08/05/Linux-NameSpace-Go/';
+          this.page.identifier = '2020/08/05/Linux-NameSpace-Go/';
+          this.page.title = 'Linux NameSpace Go';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://blog-xiaogt-com.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
