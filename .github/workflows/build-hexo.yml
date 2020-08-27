@@ -21,7 +21,7 @@ jobs:
       - name: Generate
         run: hexo clean && hexo g
       - name: Deploy
-        uses: blog/gh-pages
+        uses: xiaoJack/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.SECRET }}
           publish_dir: ./public
