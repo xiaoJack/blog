@@ -239,6 +239,173 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.xiaogt.com/2020/08/27/Linux-cgroup-go/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JackZhu">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JackZhu's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/08/27/Linux-cgroup-go/" itemprop="url">Linux cgroup go</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-08-27T09:38:19+00:00">
+                2020-08-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2020/08/27/Linux-cgroup-go/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2020/08/27/Linux-cgroup-go/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="CGroup-介绍"><a href="#CGroup-介绍" class="headerlink" title="CGroup 介绍"></a>CGroup 介绍</h2><p>Linux CGroup全称Linux Control Group， 是Linux内核的一个功能，用来限制，控制与分离一个进程组群的资源（如CPU、内存、磁盘输入输出等）。这个项目最早是由Google的工程师在2006年发起（主要是Paul Menage和Rohit Seth），最早的名称为进程容器（process containers）。在2007年时，因为在Linux内核中，容器（container）这个名词太过广泛，为避免混乱，被重命名为cgroup，并且被合并到2.6.24版的内核中去</p>
+<h2 id="概念及原理"><a href="#概念及原理" class="headerlink" title="概念及原理"></a>概念及原理</h2><p>cgroups子系统<br>cgroups为每种可以控制的资源定义了一个子系统。典型的子系统介绍如下：</p>
+<ol>
+<li>cpu 子系统，主要限制进程的 cpu 使用率</li>
+<li>cpuacct 子系统，可以统计 cgroups 中的进程的 cpu 使用报告</li>
+<li>cpuset 子系统，可以为 cgroups 中的进程分配单独的 cpu 节点或者内存节点</li>
+<li>memory 子系统，可以限制进程的 memory 使用量</li>
+<li>blkio 子系统，可以限制进程的块设备 io</li>
+<li>devices 子系统，可以控制进程能够访问某些设备</li>
+<li>net_cls 子系统，可以标记 cgroups 中进程的网络数据包，然后可以使用 tc 模块（traffic control）对数据包进行控制</li>
+<li>freezer 子系统，可以挂起或者恢复 cgroups 中的进程</li>
+<li>ns 子系统，可以使不同 cgroups 下面的进程使用不同的 namespace</li>
+</ol>
+<h2 id="使用方法"><a href="#使用方法" class="headerlink" title="使用方法"></a>使用方法</h2><h3 id="查看系统已有cgroup列表两种方法"><a href="#查看系统已有cgroup列表两种方法" class="headerlink" title="查看系统已有cgroup列表两种方法"></a>查看系统已有cgroup列表两种方法</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost cgroup]# mount -t cgroup</span><br><span class="line">cgroup on /sys/fs/cgroup/systemd type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,xattr,release_agent=/usr/lib/systemd/systemd-cgroups-agent,name=systemd)</span><br><span class="line">cgroup on /sys/fs/cgroup/freezer type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,freezer)</span><br><span class="line">cgroup on /sys/fs/cgroup/devices type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,devices)</span><br><span class="line">cgroup on /sys/fs/cgroup/net_cls,net_prio type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,net_cls,net_prio)</span><br><span class="line">cgroup on /sys/fs/cgroup/pids type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,pids)</span><br><span class="line">cgroup on /sys/fs/cgroup/blkio type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,blkio)</span><br><span class="line">cgroup on /sys/fs/cgroup/memory type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,memory)</span><br><span class="line">cgroup on /sys/fs/cgroup/cpu,cpuacct type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,cpu,cpuacct)</span><br><span class="line">cgroup on /sys/fs/cgroup/rdma type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,rdma)</span><br><span class="line">cgroup on /sys/fs/cgroup/cpuset type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,cpuset)</span><br><span class="line">cgroup on /sys/fs/cgroup/perf_event type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,perf_event)</span><br><span class="line">cgroup on /sys/fs/cgroup/hugetlb type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,hugetlb)</span><br><span class="line"></span><br><span class="line">[root@localhost cgroup]# lssubsys  -m</span><br><span class="line">cpuset /sys/fs/cgroup/cpuset</span><br><span class="line">cpu,cpuacct /sys/fs/cgroup/cpu,cpuacct</span><br><span class="line">blkio /sys/fs/cgroup/blkio</span><br><span class="line">memory /sys/fs/cgroup/memory</span><br><span class="line">devices /sys/fs/cgroup/devices</span><br><span class="line">freezer /sys/fs/cgroup/freezer</span><br><span class="line">net_cls,net_prio /sys/fs/cgroup/net_cls,net_prio</span><br><span class="line">perf_event /sys/fs/cgroup/perf_event</span><br><span class="line">hugetlb /sys/fs/cgroup/hugetlb</span><br><span class="line">pids /sys/fs/cgroup/pids</span><br><span class="line">rdma /sys/fs/cgroup/rdma</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看系统开启了哪些cgroup"><a href="#查看系统开启了哪些cgroup" class="headerlink" title="查看系统开启了哪些cgroup"></a>查看系统开启了哪些cgroup</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost cgroup]# cat /proc/cgroups</span><br><span class="line">#subsys_name	hierarchy	num_cgroups	enabled</span><br><span class="line">cpuset	            8	        1	    1</span><br><span class="line">cpu	                7	        48	    1</span><br><span class="line">cpuacct	            7	        48	    1</span><br><span class="line">blkio	            10	        48	    1</span><br><span class="line">memory	            2	        90	    1</span><br><span class="line">devices	            12	        48	    1</span><br><span class="line">freezer	            9	        1	    1</span><br><span class="line">net_cls	            4	        1	    1</span><br><span class="line">perf_event	        6	        1	    1</span><br><span class="line">net_prio	        4	        1	    1</span><br><span class="line">hugetlb	            5	        1	    1</span><br><span class="line">pids	            3	        58	    1</span><br><span class="line">rdma            	11	        1	    1</span><br></pre></td></tr></table></figure>
+
+<h3 id="手动mount-memory-cgroup"><a href="#手动mount-memory-cgroup" class="headerlink" title="手动mount memory cgroup"></a>手动mount memory cgroup</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost cgroup]# mkdir cgroup-demo</span><br><span class="line">[root@localhost cgroup]# mkdir cgroup-demo/memory</span><br><span class="line">[root@localhost cgroup]# mount -t cgroup -o memory memory ./cgroup-demo/memory</span><br><span class="line">[root@localhost cgroup]# ls cgroup-demo/memory/</span><br><span class="line">cgroup.clone_children       memory.kmem.max_usage_in_bytes      memory.memsw.limit_in_bytes      memory.usage_in_bytes</span><br><span class="line">cgroup.event_control        memory.kmem.slabinfo                memory.memsw.max_usage_in_bytes  memory.use_hierarchy</span><br><span class="line">cgroup.procs                memory.kmem.tcp.failcnt             memory.memsw.usage_in_bytes      notify_on_release</span><br><span class="line">cgroup.sane_behavior        memory.kmem.tcp.limit_in_bytes      memory.move_charge_at_immigrate  release_agent</span><br><span class="line">demo                        memory.kmem.tcp.max_usage_in_bytes  memory.numa_stat                 system.slice</span><br><span class="line">machine.slice               memory.kmem.tcp.usage_in_bytes      memory.oom_control               tasks</span><br><span class="line">memory.failcnt              memory.kmem.usage_in_bytes          memory.pressure_level            user.slice</span><br><span class="line">memory.force_empty          memory.limit_in_bytes               memory.soft_limit_in_bytes</span><br><span class="line">memory.kmem.failcnt         memory.max_usage_in_bytes           memory.stat</span><br><span class="line">memory.kmem.limit_in_bytes  memory.memsw.failcnt                memory.swappiness</span><br><span class="line">[root@localhost ~]# mount -t cgroup</span><br><span class="line">cgroup on /sys/fs/cgroup/systemd type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,xattr,release_agent=/usr/lib/systemd/systemd-cgroups-agent,name=systemd)</span><br><span class="line">cgroup on /sys/fs/cgroup/memory type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,memory)</span><br><span class="line">cgroup on /sys/fs/cgroup/pids type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,pids)</span><br><span class="line">cgroup on /sys/fs/cgroup/net_cls,net_prio type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,net_cls,net_prio)</span><br><span class="line">cgroup on /sys/fs/cgroup/hugetlb type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,hugetlb)</span><br><span class="line">cgroup on /sys/fs/cgroup/perf_event type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,perf_event)</span><br><span class="line">cgroup on /sys/fs/cgroup/cpu,cpuacct type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,cpu,cpuacct)</span><br><span class="line">cgroup on /sys/fs/cgroup/cpuset type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,cpuset)</span><br><span class="line">cgroup on /sys/fs/cgroup/freezer type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,freezer)</span><br><span class="line">cgroup on /sys/fs/cgroup/blkio type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,blkio)</span><br><span class="line">cgroup on /sys/fs/cgroup/rdma type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,rdma)</span><br><span class="line">cgroup on /sys/fs/cgroup/devices type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,devices)</span><br><span class="line">demo-memory on /go/cgroup/cgroup-demo/memory type cgroup (rw,relatime,seclabel,memory)</span><br></pre></td></tr></table></figure>
+
+<h3 id="手动-mount-cpu-cgroup-报错，cpu-already-mounted-or-mount-point-busy-解决办法"><a href="#手动-mount-cpu-cgroup-报错，cpu-already-mounted-or-mount-point-busy-解决办法" class="headerlink" title="手动 mount cpu cgroup 报错，cpu already mounted or mount point busy. 解决办法"></a>手动 mount cpu cgroup 报错，cpu already mounted or mount point busy. 解决办法</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost cgroup]# mkdir ./cgroup-demo/cpu</span><br><span class="line">[root@localhost cgroup]# mount -t cgroup -o cpu cpu ./cgroup-demo/cpu</span><br><span class="line">mount: /go/cgroup/cgroup-demo/cpu: cpu already mounted or mount point busy.</span><br><span class="line">[root@localhost cgroup]# uname -r</span><br><span class="line">4.18.0-193.el8.x86_64</span><br><span class="line">[root@localhost cgroup]# cat /proc/cgroups</span><br><span class="line">#subsys_name	hierarchy	num_cgroups	enabled</span><br><span class="line">cpuset	8	1	1</span><br><span class="line">cpu	7	48	1</span><br><span class="line">cpuacct	7	48	1</span><br><span class="line">blkio	10	48	1</span><br><span class="line">memory	2	91	1</span><br><span class="line">devices	12	48	1</span><br><span class="line">freezer	9	1	1</span><br><span class="line">net_cls	4	1	1</span><br><span class="line">perf_event	6	1	1</span><br><span class="line">net_prio	4	1	1</span><br><span class="line">hugetlb	5	1	1</span><br><span class="line">pids	3	58	1</span><br><span class="line">rdma	11	1	1</span><br><span class="line">[root@localhost cgroup]# cat /etc/redhat-release</span><br><span class="line">CentOS Linux release 8.2.2004 (Core)</span><br></pre></td></tr></table></figure>
+
+<p>关于以上这个报错，google半天没找到眉头思路，最终在 <a href="https://fuckcloudnative.io/" target="_blank" rel="noopener">米开朗基杨</a> 大佬的指导下得知Centos8系统cpu,cpuacct要合并一起使用，应该是新的系统systemd把两个合并了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost cgroup]# cat /etc/systemd/system.conf  |grep cpu</span><br><span class="line">#JoinControllers=cpu,cpuacct net_cls,net_prio</span><br><span class="line"></span><br><span class="line">[root@localhost cgroup]# mount -t cgroup -o cpu,cpuacct demo-cpu ./cgroup-demo/cpu</span><br><span class="line">[root@localhost cgroup]# mount -t cgroup</span><br><span class="line">cgroup on /sys/fs/cgroup/systemd type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,xattr,release_agent=/usr/lib/systemd/systemd-cgroups-agent,name=systemd)</span><br><span class="line">cgroup on /sys/fs/cgroup/memory type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,memory)</span><br><span class="line">cgroup on /sys/fs/cgroup/pids type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,pids)</span><br><span class="line">cgroup on /sys/fs/cgroup/net_cls,net_prio type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,net_cls,net_prio)</span><br><span class="line">cgroup on /sys/fs/cgroup/hugetlb type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,hugetlb)</span><br><span class="line">cgroup on /sys/fs/cgroup/perf_event type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,perf_event)</span><br><span class="line">cgroup on /sys/fs/cgroup/cpu,cpuacct type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,cpu,cpuacct)</span><br><span class="line">cgroup on /sys/fs/cgroup/cpuset type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,cpuset)</span><br><span class="line">cgroup on /sys/fs/cgroup/freezer type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,freezer)</span><br><span class="line">cgroup on /sys/fs/cgroup/blkio type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,blkio)</span><br><span class="line">cgroup on /sys/fs/cgroup/rdma type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,rdma)</span><br><span class="line">cgroup on /sys/fs/cgroup/devices type cgroup (rw,nosuid,nodev,noexec,relatime,seclabel,devices)</span><br><span class="line">demo-memory on /go/cgroup/cgroup-demo/memory type cgroup (rw,relatime,seclabel,memory)</span><br><span class="line">demo-cpu on /go/cgroup/cgroup-demo/cpu type cgroup (rw,relatime,seclabel,cpu,cpuacct)</span><br></pre></td></tr></table></figure>
+
+<h3 id="把当前bash进程ID加入到cgroup-memory限制当中-限制100m内存"><a href="#把当前bash进程ID加入到cgroup-memory限制当中-限制100m内存" class="headerlink" title="把当前bash进程ID加入到cgroup memory限制当中,限制100m内存"></a>把当前bash进程ID加入到cgroup memory限制当中,限制100m内存</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost memory]# mkdir ./cgroup-demo/memory/demo-test/</span><br><span class="line">[root@localhost memory]# cd ./cgroup-demo/memory/demo-test/</span><br><span class="line">[root@localhost demo-test]# ls</span><br><span class="line">cgroup.clone_children           memory.kmem.tcp.max_usage_in_bytes  memory.oom_control</span><br><span class="line">cgroup.event_control            memory.kmem.tcp.usage_in_bytes      memory.pressure_level</span><br><span class="line">cgroup.procs                    memory.kmem.usage_in_bytes          memory.soft_limit_in_bytes</span><br><span class="line">memory.failcnt                  memory.limit_in_bytes               memory.stat</span><br><span class="line">memory.force_empty              memory.max_usage_in_bytes           memory.swappiness</span><br><span class="line">memory.kmem.failcnt             memory.memsw.failcnt                memory.usage_in_bytes</span><br><span class="line">memory.kmem.limit_in_bytes      memory.memsw.limit_in_bytes         memory.use_hierarchy</span><br><span class="line">memory.kmem.max_usage_in_bytes  memory.memsw.max_usage_in_bytes     notify_on_release</span><br><span class="line">memory.kmem.slabinfo            memory.memsw.usage_in_bytes         tasks</span><br><span class="line">memory.kmem.tcp.failcnt         memory.move_charge_at_immigrate</span><br><span class="line">memory.kmem.tcp.limit_in_bytes  memory.numa_stat</span><br><span class="line">[root@localhost demo-test]#  echo &quot;100m&quot; &gt; memory.limit_in_bytes</span><br><span class="line">[root@localhost demo-test]# cat memory.limit_in_bytes</span><br><span class="line">104857600</span><br><span class="line">[root@localhost demo-test]# echo $$ &gt; tasks</span><br><span class="line">[root@localhost demo-test]# cat tasks</span><br><span class="line">1689</span><br><span class="line">2239</span><br><span class="line">[root@localhost demo-test]# ps aux |grep 1689</span><br><span class="line">root         931  0.0  0.2  16892  2132 ?        Ss   22:30   0:00 /usr/sbin/mcelog --ignorenodev --daemon --foreground</span><br><span class="line">root        1689  0.0  0.7  27448  6088 pts/0    Ss   22:33   0:00 -bash</span><br><span class="line">root        2254  0.0  0.1  12320  1084 pts/0    S+   23:02   0:00 grep --color=auto 1689</span><br><span class="line"></span><br><span class="line">#启动一个500m内存的测试程序</span><br><span class="line">[root@localhost cgroup]# stress --vm-bytes 500m --vm-keep -m 1</span><br><span class="line">stress: info: [2314] dispatching hogs: 0 cpu, 0 io, 1 vm, 0 hdd</span><br><span class="line"></span><br><span class="line">#可以使用htop查看stress程序的内存情况，永远不会超过100m内存的，因为我们限制的是当前的bash,产生的子进程一并限制，想想docker 内存限制是不是也是类型这样的实现</span><br></pre></td></tr></table></figure>
+
+<h3 id="把进程ID加入到cgroup-cpu限制-20-的使用率"><a href="#把进程ID加入到cgroup-cpu限制-20-的使用率" class="headerlink" title="把进程ID加入到cgroup cpu限制 20% 的使用率"></a>把进程ID加入到cgroup cpu限制 20% 的使用率</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost cgroup]# mkdir ./cgroup-demo/cpu/demo-cpu</span><br><span class="line">[root@localhost cgroup]# echo 20000 &gt; ./cgroup-demo/cpu/demo-cpu/cpu.cfs_quota_us</span><br><span class="line">[root@localhost cgroup]# echo  $$ &gt; ./cgroup-demo/cpu/demo-cpu/tasks</span><br><span class="line">[root@localhost cgroup]# cat  ./cgroup-demo/cpu/demo-cpu/tasks</span><br><span class="line">1689</span><br><span class="line">2495</span><br><span class="line">[root@localhost cgroup]# stress --vm-bytes 500m --vm-keep -m 1</span><br><span class="line">stress: info: [2504] dispatching hogs: 0 cpu, 0 io, 1 vm, 0 hdd</span><br><span class="line"></span><br><span class="line">#可以使用htop查看stress程序的cpu的使用情况，永远不会超过20%CPU的，因为我们限制的是当前的bash,产生的子进程一并限制，想想docker CPU限制是不是也是类型这样的实现</span><br></pre></td></tr></table></figure>
+
+<h3 id="查看进程ID都有哪些cgroup"><a href="#查看进程ID都有哪些cgroup" class="headerlink" title="查看进程ID都有哪些cgroup"></a>查看进程ID都有哪些cgroup</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[root@localhost ~]# cat /proc/2504/cgroup</span><br><span class="line">12:devices:/system.slice/sshd.service</span><br><span class="line">11:rdma:/</span><br><span class="line">10:blkio:/system.slice/sshd.service</span><br><span class="line">9:freezer:/</span><br><span class="line">8:cpuset:/</span><br><span class="line">7:cpu,cpuacct:/demo-cpu</span><br><span class="line">6:perf_event:/</span><br><span class="line">5:hugetlb:/</span><br><span class="line">4:net_cls,net_prio:/</span><br><span class="line">3:pids:/user.slice/user-0.slice/session-1.scope</span><br><span class="line">2:memory:/demo-test</span><br><span class="line">1:name=systemd:/user.slice/user-0.slice/session-1.scope</span><br><span class="line">[root@localhost ~]#</span><br></pre></td></tr></table></figure>
+
+<h3 id="go语言简单实现，github代码下载"><a href="#go语言简单实现，github代码下载" class="headerlink" title="go语言简单实现，github代码下载"></a>go语言简单实现，<a href="https://github.com/xiaoJack/linux-cgroup-go" target="_blank" rel="noopener">github代码下载</a></h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">	&quot;fmt&quot;</span><br><span class="line">	&quot;io/ioutil&quot;</span><br><span class="line">	&quot;os&quot;</span><br><span class="line">	&quot;os/exec&quot;</span><br><span class="line">	&quot;path&quot;</span><br><span class="line">	&quot;strconv&quot;</span><br><span class="line">	&quot;syscall&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">const (</span><br><span class="line">	// 挂载了 memory subsystem的hierarchy的根目录位置</span><br><span class="line">	cgroupMemoryHierarchyMount = &quot;/sys/fs/cgroup/memory&quot;</span><br><span class="line">	cgroupCPUHierarchyMount    = &quot;/sys/fs/cgroup/cpu&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line"></span><br><span class="line">	if os.Args[0] == &quot;/proc/self/exe&quot; &#123;</span><br><span class="line">		//容器进程</span><br><span class="line">		fmt.Printf(&quot;current pid %d \n&quot;, syscall.Getpid())</span><br><span class="line"></span><br><span class="line">		cmd := exec.Command(&quot;sh&quot;, &quot;-c&quot;, &quot;stress --vm-bytes 500m --vm-keep -m 1&quot;)</span><br><span class="line">		cmd.SysProcAttr = &amp;syscall.SysProcAttr&#123;&#125;</span><br><span class="line">		cmd.Stdin = os.Stdin</span><br><span class="line">		cmd.Stdout = os.Stdout</span><br><span class="line">		cmd.Stderr = os.Stderr</span><br><span class="line">		if err := cmd.Run(); err != nil &#123;</span><br><span class="line">			panic(err)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	cmd := exec.Command(&quot;/proc/self/exe&quot;)</span><br><span class="line">	cmd.SysProcAttr = &amp;syscall.SysProcAttr&#123;</span><br><span class="line">		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS,</span><br><span class="line">	&#125;</span><br><span class="line">	cmd.Stdin = os.Stdin</span><br><span class="line">	cmd.Stdout = os.Stdout</span><br><span class="line">	cmd.Stderr = os.Stderr</span><br><span class="line">	err := cmd.Start()</span><br><span class="line">	if err != nil &#123;</span><br><span class="line">		panic(err)</span><br><span class="line">	&#125;</span><br><span class="line">	// 得到 fork出来进程映射在外部命名空间的pid</span><br><span class="line">	fmt.Printf(&quot;%+v&quot;, cmd.Process.Pid)</span><br><span class="line"></span><br><span class="line">	cgroupMenory(cmd.Process.Pid)</span><br><span class="line">	cgroupCPU(cmd.Process.Pid)</span><br><span class="line"></span><br><span class="line">	cmd.Process.Wait()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func cgroupCPU(pid int) &#123;</span><br><span class="line">	// 创建子cgroup</span><br><span class="line">	newCgroupCPU := path.Join(cgroupCPUHierarchyMount, &quot;cgroup-demo-cpu&quot;)</span><br><span class="line">	os.Mkdir(newCgroupCPU, 0755)</span><br><span class="line"></span><br><span class="line">	// 将容器进程放到子cgroup中</span><br><span class="line">	if err := ioutil.WriteFile(path.Join(newCgroupCPU, &quot;tasks&quot;), []byte(strconv.Itoa(pid)), 0644); err != nil &#123;</span><br><span class="line">		panic(err)</span><br><span class="line">	&#125;</span><br><span class="line">	// 限制cgroup的CPU使用</span><br><span class="line">	if err := ioutil.WriteFile(path.Join(newCgroupCPU, &quot;cpu.cfs_quota_us&quot;), []byte(&quot;20000&quot;), 0644); err != nil &#123;</span><br><span class="line">		panic(err)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func cgroupMenory(pid int) &#123;</span><br><span class="line">	// 创建子cgroup</span><br><span class="line">	newCgroupMemory := path.Join(cgroupMemoryHierarchyMount, &quot;cgroup-demo-memory&quot;)</span><br><span class="line">	os.Mkdir(newCgroupMemory, 0755)</span><br><span class="line"></span><br><span class="line">	// 将容器进程放到子cgroup中</span><br><span class="line">	if err := ioutil.WriteFile(path.Join(newCgroupMemory, &quot;tasks&quot;), []byte(strconv.Itoa(pid)), 0644); err != nil &#123;</span><br><span class="line">		panic(err)</span><br><span class="line">	&#125;</span><br><span class="line">	// 限制cgroup的内存使用</span><br><span class="line">	if err := ioutil.WriteFile(path.Join(newCgroupMemory, &quot;memory.limit_in_bytes&quot;), []byte(&quot;100m&quot;), 0644); err != nil &#123;</span><br><span class="line">		panic(err)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h4><ul>
+<li><a href="https://learnku.com/articles/42117" target="_blank" rel="noopener">https://learnku.com/articles/42117</a></li>
+<li><a href="https://coolshell.cn/articles/17049.html" target="_blank" rel="noopener">https://coolshell.cn/articles/17049.html</a></li>
+<li><a href="https://tech.meituan.com/2015/03/31/cgroups.html" target="_blank" rel="noopener">https://tech.meituan.com/2015/03/31/cgroups.html</a></li>
+<li><a href="https://segmentfault.com/a/1190000006917884" target="_blank" rel="noopener">https://segmentfault.com/a/1190000006917884</a></li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://blog.xiaogt.com/2020/08/05/Linux-NameSpace-Go/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -270,7 +437,7 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-08-05T10:19:23+08:00">
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-08-05T10:19:23+00:00">
                 2020-08-05
               </time>
             
@@ -474,7 +641,7 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T08:49:35+08:00">
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T08:49:35+00:00">
                 2019-08-10
               </time>
             
@@ -609,7 +776,7 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T08:45:18+08:00">
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T08:45:18+00:00">
                 2019-08-10
               </time>
             
@@ -753,7 +920,7 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T08:42:43+08:00">
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T08:42:43+00:00">
                 2019-08-10
               </time>
             
@@ -886,7 +1053,7 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T08:41:21+08:00">
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T08:41:21+00:00">
                 2019-08-10
               </time>
             
@@ -1022,7 +1189,7 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T08:29:52+08:00">
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T08:29:52+00:00">
                 2019-08-10
               </time>
             
@@ -1174,7 +1341,7 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T08:27:22+08:00">
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T08:27:22+00:00">
                 2019-08-10
               </time>
             
@@ -1317,7 +1484,7 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T08:23:20+08:00">
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T08:23:20+00:00">
                 2019-08-10
               </time>
             
@@ -1453,7 +1620,7 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-09T12:43:45+08:00">
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-09T12:43:45+00:00">
                 2019-08-09
               </time>
             
@@ -1649,7 +1816,7 @@
               
                 <a href="/archives">
               
-                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-count">10</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
