@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Go,">
+  <meta name="keywords" content="Hexo, NexT">
 
 
 
@@ -79,18 +79,13 @@
 
 
 
-<meta name="description" content="Beego Docker-compose部署报 Handler crashed with error can’t find templatefile in the path:views/user/index.html解决办法docker-compose.yml 里面增加working_dir目录，类似cd到这个目录里面后在启动 1working_dir: &amp;apos;/admin&amp;apos;  参">
-<meta name="keywords" content="Go">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Beego Docker-compose部署报views找不到">
-<meta property="og:url" content="http://blog.xiaogt.com/2019/08/10/beego-Docker-compose部署报views找不到/index.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="JackZhu&#39;s Blog">
+<meta property="og:url" content="http://blog.xiaogt.com/page/2/index.html">
 <meta property="og:site_name" content="JackZhu&#39;s Blog">
-<meta property="og:description" content="Beego Docker-compose部署报 Handler crashed with error can’t find templatefile in the path:views/user/index.html解决办法docker-compose.yml 里面增加working_dir目录，类似cd到这个目录里面后在启动 1working_dir: &amp;apos;/admin&amp;apos;  参">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2020-09-11T08:43:17.876Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Beego Docker-compose部署报views找不到">
-<meta name="twitter:description" content="Beego Docker-compose部署报 Handler crashed with error can’t find templatefile in the path:views/user/index.html解决办法docker-compose.yml 里面增加working_dir目录，类似cd到这个目录里面后在启动 1working_dir: &amp;apos;/admin&amp;apos;  参">
+<meta name="twitter:title" content="JackZhu&#39;s Blog">
 
 
 
@@ -120,13 +115,13 @@
 
 
 
-  <link rel="canonical" href="http://blog.xiaogt.com/2019/08/10/beego-Docker-compose部署报views找不到/">
+  <link rel="canonical" href="http://blog.xiaogt.com/page/2/">
 
 
 
 
 
-  <title>Beego Docker-compose部署报views找不到 | JackZhu's Blog</title>
+  <title>JackZhu's Blog</title>
   
 
 
@@ -145,7 +140,8 @@
     
   
 
-  <div class="container sidebar-position-left page-post-detail">
+  <div class="container sidebar-position-left 
+  page-home">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -228,9 +224,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-
-  <div id="posts" class="posts-expand">
+  <section id="posts" class="posts-expand">
     
+      
 
   
 
@@ -243,7 +239,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.xiaogt.com/2019/08/10/beego-Docker-compose部署报views找不到/">
+    <link itemprop="mainEntityOfPage" href="http://blog.xiaogt.com/2019/08/09/Docker简单使用指南/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="JackZhu">
@@ -260,7 +256,9 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Beego Docker-compose部署报views找不到</h1>
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/08/09/Docker简单使用指南/" itemprop="url">Docker简单使用指南</a></h1>
         
 
         <div class="post-meta">
@@ -272,8 +270,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T08:42:43+00:00">
-                2019-08-10
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-09T12:43:45+00:00">
+                2019-08-09
               </time>
             
 
@@ -291,8 +289,8 @@
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2019/08/10/beego-Docker-compose部署报views找不到/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/08/10/beego-Docker-compose部署报views找不到/" itemprop="commentCount"></span>
+                <a href="/2019/08/09/Docker简单使用指南/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/08/09/Docker简单使用指南/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -320,11 +318,76 @@
       
 
       
-        <h3 id="Beego-Docker-compose部署报-Handler-crashed-with-error-can’t-find-templatefile-in-the-path-views-user-index-html"><a href="#Beego-Docker-compose部署报-Handler-crashed-with-error-can’t-find-templatefile-in-the-path-views-user-index-html" class="headerlink" title="Beego Docker-compose部署报 Handler crashed with error can’t find templatefile in the path:views/user/index.html"></a>Beego Docker-compose部署报 Handler crashed with error can’t find templatefile in the path:views/user/index.html</h3><p>解决办法<br>docker-compose.yml 里面增加working_dir目录，类似cd到这个目录里面后在启动</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">working_dir: &apos;/admin&apos;</span><br></pre></td></tr></table></figure>
+        
+          
+            <h2 id="镜像相关"><a href="#镜像相关" class="headerlink" title="镜像相关"></a>镜像相关</h2><ol>
+<li><p>拉取官方镜像</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull redis</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>当前目录构建自己的镜像</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker build -t nginx:v3 .</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看本地已有的镜像</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker image ls</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>删除本地镜像</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker image rm alpine</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>本地镜像打Tag</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker tag  alpine  xiaogt/alpine</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>推送镜像到远程仓库</p>
+<ul>
+<li><a href="https://hub.docker.com" target="_blank" rel="noopener">https://hub.docker.com</a> 以hub上为例子，要注册网站上面的账号</li>
+<li>运行docker login ,输入注册的用户名，密码</li>
+<li>推送镜像到远程仓库  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker push xiaogt/alpine</span><br></pre></td></tr></table></figure>
 
-<p><a href="https://docs.docker.com/compose/compose-file/#domainname-hostname-ipc-mac_address-privileged-read_only-shm_size-stdin_open-tty-user-working_dir" target="_blank" rel="noopener">参考官方文档</a><br><a href="https://docs.docker.com/compose/compose-file/#domainname-hostname-ipc-mac_address-privileged-read_only-shm_size-stdin_open-tty-user-working_dir" target="_blank" rel="noopener">https://docs.docker.com/compose/compose-file/#domainname-hostname-ipc-mac_address-privileged-read_only-shm_size-stdin_open-tty-user-working_dir</a></p>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="容器相关"><a href="#容器相关" class="headerlink" title="容器相关"></a>容器相关</h2><ol>
+<li><p>运行本地容器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --name some-redis -d -p 6379:6379 redis</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>停止一个容器运行（停止完不会删除）</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker container stop some-redis</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>停止后重新启动</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker container start some-redis</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>直接重启运行中的容器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker container restart some-redis</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看当前运行的容器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker ps -as</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>进入正在运行的容器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker exec -it f3232bc0215c bash</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看所有已经创建的包括终止状态的容器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker container ls -a</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>删除单个终止运行的容器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker container rm gopub_gopub_1</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>删除所有处于终止状态的容器</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker container prune</span><br></pre></td></tr></table></figure>
 
+
+</li>
+</ol>
+<h2 id="相关问题总结"><a href="#相关问题总结" class="headerlink" title="相关问题总结"></a>相关问题总结</h2><ol>
+<li><p>删除本地镜像报错</p>
+ <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"> ➜ /Users/jack &gt;docker image  ls</span><br><span class="line">REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE</span><br><span class="line">alpine              latest              4d90542f0623        2 weeks ago         5.58MB</span><br><span class="line">golang              latest              9fe4cdc1f173        3 weeks ago         774MB</span><br><span class="line">redis               latest              3c41ce05add9        3 weeks ago         95MB</span><br><span class="line">gopub_gopub         latest              91463c0bc27f        6 weeks ago         24.6MB</span><br><span class="line">mysql               latest              990386cbd5c0        7 weeks ago         443MB</span><br><span class="line">➜ /Users/jack &gt;docker image rm gopub_gopub</span><br><span class="line">Error response from daemon: conflict: unable to remove repository reference &quot;gopub_gopub&quot; (must force) - container d635b917b0b7 is using its referenced image 91463c0bc27f</span><br><span class="line">➜ /Users/jack &gt;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<hr>
+<p>解决思路：有终止运行的容器没有删除，有关联关系还在，导致删除镜像的时候报错，先把停止状态容器删除了，就可以删除镜像</p>
+
+          
+        
       
     </div>
     
@@ -339,40 +402,14 @@
 
     <footer class="post-footer">
       
-        <div class="post-tags">
-          
-            <a href="/tags/Go/" rel="tag"># Go</a>
-          
-        </div>
+
+      
+
       
 
       
       
-      
-
-      
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
-            
-              <a href="/2019/08/10/Golang生产环境中time包的zonefile-zip问题/" rel="next" title="Golang生产环境中time包的zonefile.zip问题">
-                <i class="fa fa-chevron-left"></i> Golang生产环境中time包的zonefile.zip问题
-              </a>
-            
-          </div>
-
-          <span class="post-nav-divider"></span>
-
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2019/08/10/go-错误总结/" rel="prev" title="go 错误总结">
-                go 错误总结 <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
-        </div>
-      
-
-      
+        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -382,11 +419,14 @@
   </article>
 
 
+    
+  </section>
 
-    <div class="post-spread">
-      
-    </div>
-  </div>
+  
+  <nav class="pagination">
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+  </nav>
+
 
 
           </div>
@@ -394,20 +434,6 @@
 
 
           
-
-  
-    <div class="comments" id="comments">
-      <div id="disqus_thread">
-        <noscript>
-          Please enable JavaScript to view the
-          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
-        </noscript>
-      </div>
-    </div>
-
-  
-
-
 
         </div>
         
@@ -428,17 +454,8 @@
       
 
       
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            文章目录
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            站点概览
-          </li>
-        </ul>
-      
 
-      <section class="site-overview-wrap sidebar-panel">
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -505,22 +522,6 @@
         </div>
       </section>
 
-      
-      <!--noindex-->
-        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-
-            
-              
-            
-
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Beego-Docker-compose部署报-Handler-crashed-with-error-can’t-find-templatefile-in-the-path-views-user-index-html"><span class="nav-number">1.</span> <span class="nav-text">Beego Docker-compose部署报 Handler crashed with error can’t find templatefile in the path:views/user/index.html</span></a></li></ol></div>
-            
-
-          </div>
-        </section>
-      <!--/noindex-->
       
 
       
@@ -654,10 +655,6 @@
   
 
   
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
-<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
-
-
 
   
 
@@ -675,18 +672,6 @@
       <script id="dsq-count-scr" src="https://blog-xiaogt-com.disqus.com/count.js" async></script>
     
 
-    
-      <script type="text/javascript">
-        var disqus_config = function () {
-          this.page.url = 'http://blog.xiaogt.com/2019/08/10/beego-Docker-compose部署报views找不到/';
-          this.page.identifier = '2019/08/10/beego-Docker-compose部署报views找不到/';
-          this.page.title = 'Beego Docker-compose部署报views找不到';
-        };
-        var d = document, s = d.createElement('script');
-        s.src = 'https://blog-xiaogt-com.disqus.com/embed.js';
-        s.setAttribute('data-timestamp', '' + +new Date());
-        (d.head || d.body).appendChild(s);
-      </script>
     
 
   
