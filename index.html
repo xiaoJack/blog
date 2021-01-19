@@ -239,6 +239,160 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.xiaogt.com/2021/01/19/Kubernetes-cluster-介绍/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="JackZhu">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JackZhu's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/01/19/Kubernetes-cluster-介绍/" itemprop="url">Kubernetes-cluster-介绍</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-01-19T14:17:50+00:00">
+                2021-01-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2021/01/19/Kubernetes-cluster-介绍/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2021/01/19/Kubernetes-cluster-介绍/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Kubernetes-组件"><a href="#Kubernetes-组件" class="headerlink" title="Kubernetes 组件"></a>Kubernetes 组件</h1><img src="https://raw.githubusercontent.com/kubernetes/kubernetes/master/logo/logo_with_border.png " width="400" height="400" alt="kubernetes" align="center">
+
+
+<p>Kubernetes 是一个自动化的容器(container)编排平台，它负责应用的部署、应用的弹性以及应用的管理，这些都是基于容器的</p>
+<p><img src="https://d33wubrfki0l68.cloudfront.net/2475489eaf20163ec0f54ddc1d92aa8d4c87c96b/e7c81/images/docs/components-of-kubernetes.svg" alt="image"></p>
+<h2 id="Kubernetes架构图"><a href="#Kubernetes架构图" class="headerlink" title="Kubernetes架构图"></a>Kubernetes架构图</h2><p><img src="https://raw.githubusercontent.com/xiaoJack/blog-images/master/kubernetes.png" alt="image"></p>
+<p><img src="https://raw.githubusercontent.com/xiaoJack/blog-images/master/kubernetes-master.png" alt="image"></p>
+<h2 id="Master-Control-Plane-Components"><a href="#Master-Control-Plane-Components" class="headerlink" title="Master (Control Plane Components)"></a>Master (Control Plane Components)</h2><h3 id="apiserver"><a href="#apiserver" class="headerlink" title="apiserver"></a>apiserver</h3><p>Kubernetes 中所有的组件都会和 API Server 进行连接，组件与组件之间一般不进行独立的连接，都依赖于 API Server 进行消息的传送；<br>API Server 设计上考虑了水平伸缩，也就是说，它可通过部署多个实例进行伸缩。 你可以运行 API Server 的多个实例，并在这些实例之间平衡流量。</p>
+<h3 id="scheduler"><a href="#scheduler" class="headerlink" title="scheduler"></a>scheduler</h3><p>控制平面组件，负责监视新创建的、未指定运行节点（node）的 Pods，选择节点让 Pod 在上面运行。</p>
+<p>调度决策考虑的因素包括单个 Pod 和 Pod 集合的资源需求、硬件/软件/策略约束、亲和性和反亲和性规范、数据位置、工作负载间的干扰和最后时限。</p>
+<h3 id="controller-manager"><a href="#controller-manager" class="headerlink" title="controller-manager"></a>controller-manager</h3><p>从逻辑上讲，每个控制器都是一个单独的进程， 但是为了降低复杂性，它们都被编译到同一个可执行文件，并在一个进程中运行。</p>
+<p>这些控制器包括:</p>
+<p>节点控制器（Node Controller）: 负责在节点出现故障时进行通知和响应。<br>副本控制器（Replication Controller）: 负责为系统中的每个副本控制器对象维护正确数量的 Pod。<br>端点控制器（Endpoints Controller）: 填充端点(Endpoints)对象(即加入 Service 与 Pod)。<br>服务帐户和令牌控制器（Service Account &amp; Token Controllers）: 为新的命名空间创建默认帐户和 API 访问令牌.</p>
+<h3 id="etcd"><a href="#etcd" class="headerlink" title="etcd"></a>etcd</h3><p>etcd 是兼具一致性和高可用性的键值数据库，可以作为保存 Kubernetes 所有集群数据的后台数据库。</p>
+<p><img src="https://raw.githubusercontent.com/xiaoJack/blog-images/master/kubernetes-node.png" alt="image"></p>
+<h2 id="Node"><a href="#Node" class="headerlink" title="Node"></a>Node</h2><h3 id="kubelet"><a href="#kubelet" class="headerlink" title="kubelet"></a>kubelet</h3><p>一个在集群中每个节点（node）上运行的代理。 它保证容器（containers）都 运行在 Pod 中。</p>
+<p>kubelet 接收一组通过各类机制提供给它的 PodSpecs，确保这些 PodSpecs 中描述的容器处于运行状态且健康。 kubelet 不会管理不是由 Kubernetes 创建的容器。</p>
+<h3 id="kube-proxy"><a href="#kube-proxy" class="headerlink" title="kube-proxy"></a>kube-proxy</h3><p>kube-proxy 是集群中每个节点上运行的网络代理， 实现 Kubernetes 服务（Service） 概念的一部分。</p>
+<p>kube-proxy 维护节点上的网络规则。这些网络规则允许从集群内部或外部的网络会话与 Pod 进行网络通信。</p>
+<p>如果操作系统提供了数据包过滤层并可用的话，kube-proxy 会通过它来实现网络规则。否则， kube-proxy 仅转发流量本身。</p>
+<h3 id="Container-Runtime"><a href="#Container-Runtime" class="headerlink" title="Container Runtime"></a>Container Runtime</h3><p>Kubernetes 支持多个容器运行环境: Docker、 containerd、CRI-O 以及任何实现 Kubernetes CRI (容器运行环境接口)。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ul>
+<li><a href="https://kubernetes.io/zh/docs/concepts/overview/components" target="_blank" rel="noopener">https://kubernetes.io/zh/docs/concepts/overview/components</a></li>
+<li><a href="https://www.infoq.cn/article/knmavdo3jxs3qpkqtzbw" target="_blank" rel="noopener">https://www.infoq.cn/article/knmavdo3jxs3qpkqtzbw</a></li>
+</ul>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://blog.xiaogt.com/2020/09/11/Linux-Union-File-System-文件系统/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1607,142 +1761,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.xiaogt.com/2019/08/10/docker-compose启动mysql报错/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="JackZhu">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="JackZhu's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/08/10/docker-compose启动mysql报错/" itemprop="url">docker-compose启动mysql报错</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-10T08:23:20+00:00">
-                2019-08-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/2019/08/10/docker-compose启动mysql报错/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="2019/08/10/docker-compose启动mysql报错/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>今天使用在本地mac环境docker-compose配置一个项目的时候，mysql5.7启不来了</p>
-<p>查看日志的关键信息如下，好像数据目录有问题，想起前几天跑过mysql8.0的镜像，可能是数据文件冲突导致</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql_1                | 2017-10-04T04:21:57.641673Z 1 [ERROR] [FATAL] InnoDB: Table flags are 0x4800 in the data dictionary but the flags in file mysql.ibd are 0x800!</span><br></pre></td></tr></table></figure>
-
-<p>删除所有的本地docker volume</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo docker volume rm $(sudo docker volume ls -qf dangling=true)</span><br></pre></td></tr></table></figure>
-
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1793,7 +1811,7 @@
               
                 <a href="/archives">
               
-                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1806,7 +1824,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -1859,7 +1877,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
